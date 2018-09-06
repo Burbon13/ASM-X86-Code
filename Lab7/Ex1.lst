@@ -1,0 +1,40 @@
+     1                                  ;Sa se determine suma elementelor unui sir de word-uri
+     2                                  ;d dw 12h,34h,1234h,0ah
+     3                                  bits 32
+     4                                  
+     5                                  global start
+     6                                  
+     7                                  extern exit, printf
+     8                                  import exit msvcrt.dll
+     9                                  import printf msvcrt.dll
+    10                                  
+    11                                  segment data use32 class=data
+    12 00000000 0100020003000400            d dw 1,2,3,4
+    13                                      ld equ ($ - d) 
+    14 00000008 0000                        rez dw 0
+    15 0000000A 2564                        af db "%d"
+    16                                      
+    17                                  segment code use32 class=code
+    18                                      start:
+    19 00000000 BE00000000                      mov esi, 0
+    20 00000005 BB00000000                      mov ebx, 0
+    21                                          
+    22                                      s_for:
+    23 0000000A 83FE08                          cmp esi,ld
+    24 0000000D 740F                            je f_for
+    25 0000000F 668B86[00000000]                mov ax, [d+esi]
+    26 00000016 98                              cwde
+    27 00000017 01C3                            add ebx, eax
+    28 00000019 83C602                          add esi, 2
+    29 0000001C EBEC                            jmp s_for
+    30                                          
+    31                                          
+    32                                      f_for:
+    33                                      
+    34 0000001E 53                              push ebx
+    35 0000001F 68[0A000000]                    push dword af
+    36 00000024 FF15[00000000]                  call [printf]
+    37 0000002A 83C408                          add esp, 4 * 2
+    38                                          
+    39 0000002D 6A00                            push dword 0
+    40 0000002F FF15[00000000]                  call [exit]

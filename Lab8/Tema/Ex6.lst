@@ -1,0 +1,82 @@
+     1                                  ;Dandu-se un sir de cuvinte sa se obtina sirul (de octeti) cifrelor in baza zece ale fiecarui cuvant din acest sir.
+     2                                  bits 32
+     3                                  
+     4                                  global start
+     5                                  
+     6                                  extern exit, printf
+     7                                  import exit msvcrt.dll
+     8                                  import printf msvcrt.dll
+     9                                  
+    10                                  segment data use32 class=data
+    11 00000000 39301E0889B3                sir DW 12345, 2078, 45961 
+    12                                      lsir equ ($ - sir) / 2
+    13 00000006 25642000                    mesaj db "%d ", 0
+    14 0000000A <res 00000012>              sirfinal resb lsir * 6
+    15 0000001C 00                          len_f db 0
+    16                                      
+    17                                  segment code use32 class=code
+    18                                      start:
+    19                                          
+    20 00000000 BE[00000000]                    mov esi, sir
+    21 00000005 B903000000                      mov ecx, lsir
+    22 0000000A BF[0A000000]                    mov edi, sirfinal
+    23                                          
+    24                                      lup:
+    25                                          ;verificam daca am ajuns la sfarsit
+    26 0000000F B8[00000000]                    mov eax, sir
+    27 00000014 83C006                          add eax, lsir * 2
+    28 00000017 39C6                            cmp esi, eax
+    29 00000019 732F                            jae exit_lup
+    30                                          
+    31 0000001B 66AD                            lodsw ;ax
+    32                                          
+    33 0000001D 66BB0A00                        mov bx, 10
+    34 00000021 B900000000                      mov ecx, 0
+    35                                          uail_not_zero:
+    36                                              
+    37 00000026 6683F800                            cmp ax, 0
+    38 0000002A 740C                                je exit_uail_not_zero
+    39                                              
+    40 0000002C 41                                  inc ecx
+    41                                              
+    42 0000002D BA00000000                          mov edx, 0
+    43 00000032 66F7F3                              div bx ;ax = nr / 10, dx = nr % 10
+    44 00000035 52                                  push edx
+    45                                              
+    46 00000036 EBEE                            jmp uail_not_zero    
+    47                                          exit_uail_not_zero:
+    48                                          
+    49                                          fa_sir:
+    50 00000038 58                                  pop eax ;al val
+    51 00000039 AA                                  stosb
+    52                                              
+    53 0000003A A0[1C000000]                        mov al, [len_f]
+    54 0000003F FEC0                                inc al
+    55 00000041 A2[1C000000]                        mov [len_f], al
+    56                                              
+    57 00000046 E2F0                                loop fa_sir        
+    58                                          
+    59 00000048 EBC5                        jmp lup
+    60                                      exit_lup:
+    61                                      
+    62 0000004A 8B0D[1C000000]                  mov ecx, [len_f]
+    63 00000050 BE[0A000000]                    mov esi, sirfinal
+    64 00000055 B800000000                      mov eax, 0
+    65                                          
+    66                                      afis:
+    67                                          
+    68 0000005A AC                              lodsb ;al valoarea
+    69                                          
+    70 0000005B 60                              pushad
+    71                                          
+    72 0000005C 50                              push eax
+    73 0000005D 68[06000000]                    push dword mesaj
+    74 00000062 FF15[00000000]                  call [printf]
+    75 00000068 83C408                          add esp, 4  * 2
+    76                                          
+    77 0000006B 61                              popad
+    78                                          
+    79 0000006C E2EC                        loop afis
+    80                                          
+    81 0000006E 6A00                            push dword 0
+    82 00000070 FF15[00000000]                  call [exit]

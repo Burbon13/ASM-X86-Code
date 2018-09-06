@@ -1,0 +1,54 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit, fopen, fscanf, printf
+     6                                  import exit msvcrt.dll
+     7                                  import fopen msvcrt.dll
+     8                                  import fscanf msvcrt.dll
+     9                                  import printf msvcrt.dll
+    10                                  
+    11                                  
+    12                                  segment data use32 class=data
+    13 00000000 70616C696E64726F6D-         fisier db "palindrom.txt", 0
+    13 00000009 2E74787400         
+    14 0000000E 7200                        mod_acces db "r", 0
+    15 00000010 FFFFFFFF                    handler dd -1
+    16 00000014 25642000                    format db "%d ", 0
+    17 00000018 00000000                    nr dd 0
+    18                                      
+    19                                      
+    20                                  segment code use32 class=code  
+    21                                      start:
+    22                                          
+    23 00000000 68[0E000000]                    push dword mod_acces
+    24 00000005 68[00000000]                    push dword fisier
+    25 0000000A FF15[00000000]                  call [fopen]
+    26 00000010 83C408                          add esp, 4 * 2
+    27                                          
+    28 00000013 83F800                          cmp eax, 0
+    29 00000016 7439                            je final
+    30 00000018 A3[10000000]                    mov [handler], eax
+    31                                          
+    32                                          bucla:
+    33                                              
+    34                                              ;fscanf(handler,format,varia...)
+    35 0000001D 68[18000000]                        push dword nr
+    36 00000022 68[14000000]                        push dword format
+    37 00000027 FF35[10000000]                      push dword [handler]
+    38 0000002D FF15[00000000]                      call [fscanf]
+    39 00000033 83C40C                              add esp, 4 * 3
+    40                                              
+    41 00000036 83F8FF                              cmp eax, -1
+    42 00000039 7416                                je final
+    43                                              
+    44 0000003B FF35[18000000]                      push dword [nr]
+    45 00000041 68[14000000]                        push dword format
+    46 00000046 FF15[00000000]                      call [printf]
+    47 0000004C 83C408                              add esp, 4 * 2
+    48                                              
+    49 0000004F EBCC                                jmp bucla
+    50                                          
+    51                                      final:
+    52 00000051 6A00                            push dword 0
+    53 00000053 FF15[00000000]                  call [exit]

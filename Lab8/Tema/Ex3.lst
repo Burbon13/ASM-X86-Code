@@ -1,0 +1,82 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit
+     6                                  import exit msvcrt.dll
+     7                                  
+     8                                  segment data use32 class=data
+     9 00000000 7856AB12CDAB561244-         sir DD 12AB5678h, 1256ABCDh, 12344344h 
+     9 00000009 433412             
+    10                                      ls equ $ - sir
+    11                                      
+    12                                  segment code use32 class=code
+    13                                      start:
+    14 00000000 BE[00000000]                    mov esi, sir
+    15 00000005 B90C000000                      mov ecx, ls
+    16                                          
+    17                                          loop1:
+    18 0000000A B8[00000000]                        mov eax, sir
+    19 0000000F 83C00C                              add eax, ls
+    20 00000012 39C6                                cmp esi, eax
+    21 00000014 7357                                jae final_loop1
+    22                                              
+    23 00000016 89F7                                mov edi, esi
+    24 00000018 83C704                              add edi, 4
+    25                                              loop2:
+    26                                                  
+    27 0000001B B8[00000000]                            mov eax, sir
+    28 00000020 83C00C                                  add eax, ls
+    29 00000023 39C7                                    cmp edi, eax
+    30 00000025 7341                                    jae final_loop2
+    31                                                  
+    32 00000027 66A7                                    cmpsw
+    33 00000029 66A7                                    cmpsw ;esi comparat cu edi
+    34                                                  
+    35 0000002B 7308                                    jae swap
+    36 0000002D 83EE02                                  sub esi, 2
+    37 00000030 83EF02                                  sub edi, 2
+    38 00000033 EB28                                    jmp next
+    39                                                  
+    40                                                  swap:
+    41                                                  
+    42 00000035 83EF02                                      sub edi, 2
+    43 00000038 83EE02                                      sub esi, 2
+    44                                                  
+    45 0000003B 66AD                                        lodsw;ax = cuvantul 
+    46 0000003D 6689C2                                      mov dx, ax ;bx primul cuvant
+    47 00000040 83EE02                                      sub esi, 2
+    48                                                  
+    49 00000043 89F3                                        mov ebx, esi
+    50 00000045 89FE                                        mov esi, edi
+    51 00000047 66AD                                        lodsw       ;ax al doilea cuvant
+    52 00000049 89DE                                        mov esi, ebx
+    53                                                  
+    54 0000004B 87F7                                        xchg esi, edi
+    55 0000004D 66AB                                        stosw
+    56 0000004F 83EF02                                      sub edi, 2
+    57 00000052 87F7                                        xchg esi, edi
+    58                                                  
+    59 00000054 6692                                        xchg ax, dx
+    60 00000056 66AB                                        stosw
+    61 00000058 83EF02                                      sub edi, 2
+    62                                                  
+    63 0000005B EB00                                    jmp next
+    64                                                  
+    65                                              next:
+    66 0000005D 83EF02                                  sub edi, 2
+    67 00000060 83EE02                                  sub esi, 2
+    68                                                  
+    69 00000063 83C704                                  add edi, 4
+    70                                                  
+    71 00000066 EBB3                                jmp loop2
+    72                                              final_loop2:
+    73                                              
+    74 00000068 83C604                              add esi, 4
+    75                                              
+    76 0000006B E29D                            loop loop1
+    77                                          final_loop1:
+    78                                          
+    79 0000006D 6A00                            push dword 0
+    80 0000006F FF15[00000000]                  call [exit]
+    81                                      

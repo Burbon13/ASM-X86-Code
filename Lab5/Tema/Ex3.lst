@@ -1,0 +1,38 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit
+     6                                  import exit msvcrt.dll
+     7                                  
+     8                                  segment data use32 class=data
+     9 00000000 BD8E                        a dw 1000111010111101b
+    10 00000002 AAD5                        b dw 1101010110101010b
+    11 00000004 00000000                    c dd 0
+    12                                      
+    13                                  segment code use32 class=code
+    14                                  start:
+    15 00000000 66A1[00000000]              mov ax, [a] ;ax = a15 a14 ... a0
+    16 00000006 C1E010                      shl eax, 16 ;eax = 15 a14 ... a0 0 0 ... 0
+    17                                      
+    18 00000009 66A1[00000000]              mov ax, [a] ;ax = a15 a14 ... a0
+    19 0000000F 66C1E006                    shl ax, 6   ;ax = a9 a8 ... a0 0 0 0 0 0 0 -> ah = a9 a8 a7 a6 a5 a4 a3 a2
+    20 00000013 80E4FE                      and ah, 11111110b ;ah = a9 a8 a7 a6 a5 a4 a3 0
+    21                                      
+    22 00000016 668B1D[02000000]            mov bx, [b] ;bx = b15 b14 ... b1 b0
+    23                                      
+    24 0000001D 66C1E303                    shl bx, 3   ;bh = b12 b11 b10 b9 b8 b7 b6 b5   bl = b4 b3 b2 b1 b0 0 0 0 0
+    25 00000021 80E701                      and bh, 00000001b ;bh = 0 0 0 0 0 0 0 0 b5
+    26                                      
+    27 00000024 08FC                        or ah, bh ;ah = a9 a8 a7 a6 a5 a4 a3 b5
+    28 00000026 88D8                        mov al, bl ;al = b4 b3 b2 b1 b0 0 0 0 0
+    29                                      
+    30 00000028 8A1D[01000000]              mov bl, byte [a+1] ;bl = a15 a14 a13 a12 a11 a10 a9 a8 
+    31 0000002E C0EB04                      shr bl, 4  ;bl = 0 0 0 0 a15 a14 a13 a12
+    32 00000031 80E307                      and bl, 00000111b ;bl = 0 0 0 0 0 a14 a13 a12
+    33 00000034 08D8                        or al, bl ;bl = b4 b3 b2 b1 b0 a14 a13 a12
+    34                                      
+    35 00000036 A3[04000000]                mov [c], eax ;rezultat
+    36                                      
+    37 0000003B 6A00                        push dword 0
+    38 0000003D FF15[00000000]              call [exit]

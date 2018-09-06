@@ -1,0 +1,71 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit
+     6                                  import exit msvcrt.dll
+     7                                  
+     8                                  segment data use32 class=data
+     9 00000000 03                          a db 3  ;byte
+    10 00000001 07                          b db 7  ;byte
+    11 00000002 0400                        c dw 4  ;word
+    12 00000004 02000000                    e dd 2  ;double word
+    13 00000008 0500000000000000            x dq 5  ;quad word
+    14 00000010 0000                        aux dw 0;double word
+    15                                      
+    16                                  segment code use32 class=code
+    17                                  start:
+    18                                      ;(100+a+b*c)/(a-100)+e+x/a
+    19                                      ;intepretare cu semn
+    20                                      
+    21 00000000 A0[01000000]                mov al, [b]
+    22 00000005 6698                        cbw          ;ax = b
+    23 00000007 66F72D[02000000]            imul word [c] ;dx:ax = b*c
+    24                                      
+    25 0000000E 6683C064                    add ax, 100
+    26 00000012 6683D200                    adc dx, 0    ;dx:ax = 100 + b*c
+    27                                      
+    28 00000016 6689D1                      mov cx, dx
+    29 00000019 6689C3                      mov bx, ax
+    30                                      
+    31 0000001C A0[00000000]                mov al, [a]
+    32 00000021 6698                        cbw          ;ax = a
+    33                                      
+    34 00000023 6601C3                      add bx, ax
+    35 00000026 6683D100                    adc cx, 0    ;cx:bx = 100+a+b*c
+    36                                      
+    37 0000002A A0[00000000]                mov al, [a]
+    38 0000002F 6698                        cbw         ;ax = a
+    39 00000031 6683E864                    sub ax, 100 ;ax = a - 100
+    40                                      
+    41 00000035 6650                        push ax
+    42                                      
+    43 00000037 6689D8                      mov ax, bx
+    44 0000003A 6689CA                      mov dx, cx ;dx:ax = 100+a+b*c
+    45                                      
+    46 0000003D 665B                        pop bx
+    47                                      
+    48 0000003F 66F7FB                      idiv bx ;ax = (100+a+b*c)/(a-100)
+    49                                      
+    50 00000042 6699                        cwd ;dx:ax = (100+a+b*c)/(a-100)
+    51 00000044 660305[04000000]            add ax, word [e]
+    52 0000004B 661315[06000000]            adc dx, word [e+2] ;dx:ax = (100+a+b*c)/(a-100) + e
+    53                                      
+    54 00000052 6652                        push dx
+    55 00000054 6650                        push ax
+    56 00000056 58                          pop eax
+    57 00000057 A3[10000000]                mov [aux], eax
+    58                                      
+    59 0000005C A0[00000000]                mov al, [a]
+    60 00000061 6698                        cbw
+    61 00000063 98                          cwde ;eax = a
+    62 00000064 89C3                        mov ebx, eax ;ebx = a
+    63                                      
+    64 00000066 A1[08000000]                mov eax, dword [x]
+    65 0000006B 8B15[0C000000]              mov edx, dword [x+4]
+    66                                      
+    67 00000071 F7FB                        idiv ebx ;eax = x/a
+    68 00000073 0305[10000000]              add eax, [aux] ;eax = (100+a+b*c)/(a-100) + e + x/a
+    69                                      
+    70 00000079 6A00                        push dword 0
+    71 0000007B FF15[00000000]              call [exit]

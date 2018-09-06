@@ -1,0 +1,30 @@
+     1                                  ;Sa se afiseze, pentru fiecare numar de la 32 la 126, valoarea numarului (in baza 8) si caracterul cu acel cod ASCII.
+     2                                  bits 32
+     3                                  
+     4                                  global start
+     5                                  
+     6                                  extern afish
+     7                                  extern exit
+     8                                  import exit msvcrt.dll
+     9                                  
+    10                                  segment data use32 public data
+    11 00000000 20000000                    nr dd 32
+    12                                      
+    13                                      
+    14                                  segment code use32 public code
+    15                                      start:
+    16 00000000 B820000000                      mov eax, 32
+    17                                          
+    18                                          salt:
+    19 00000005 FF35[00000000]                      push dword [nr]
+    20 0000000B E8(00000000)                        call afish
+    21 00000010 83C404                              add esp, 4
+    22 00000013 A1[00000000]                        mov eax, [nr]
+    23 00000018 40                                  inc eax
+    24 00000019 A3[00000000]                        mov [nr], eax
+    25 0000001E 83F87E                              cmp eax, 126
+    26 00000021 75E2                                jne salt
+    27                                              
+    28                                              
+    29 00000023 6A00                            push dword 0
+    30 00000025 FF15[00000000]                  call [exit]

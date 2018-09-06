@@ -1,0 +1,54 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit
+     6                                  import exit msvcrt.dll
+     7                                  
+     8                                  segment data use32 class=data
+     9 00000000 00                          a db 0;byte
+    10 00000001 04                          b db 4 ;byte
+    11 00000002 07                          d db 7 ;byte
+    12 00000003 03000000                    c dd 3 ;double word
+    13 00000007 0500000000000000            x dq 5 ;quad word
+    14                                      
+    15                                      
+    16                                  segment code use32 class=code
+    17                                  start:
+    18                                      ;(8-a*b*100+c)/d+x
+    19                                      ;interpretare fara semn
+    20                                      
+    21 00000000 A0[00000000]                mov al, [a]
+    22 00000005 F625[01000000]              mul byte [b] ;ax = a * b
+    23 0000000B 66BB6400                    mov bx, 100
+    24 0000000F 66F7E3                      mul bx ;dx:ax = a * b * 100
+    25                                      
+    26 00000012 660305[03000000]            add ax, word [c]
+    27 00000019 661315[05000000]            adc dx, word [c+2] ;dx:ax = a * b * 100 + c
+    28                                      
+    29 00000020 66B90000                    mov cx, 0
+    30 00000024 66BB0800                    mov bx, 8
+    31                                      
+    32 00000028 6629C3                      sub bx, ax
+    33 0000002B 6619D1                      sbb cx, dx ;cx:bx =8 -  a * b * 100 + c
+    34                                      
+    35 0000002E 6689D8                      mov ax, bx
+    36 00000031 6689CA                      mov dx, cx ;dx:ax = ...
+    37                                      
+    38 00000034 B700                        mov bh, 0
+    39 00000036 8A1D[02000000]              mov bl, [d]
+    40                                     
+    41 0000003C 66F7F3                      div bx ;ax = (8 -  a * b * 100 + c)/d
+    42                                      
+    43 0000003F 6689C3                      mov bx, ax
+    44 00000042 B800000000                  mov eax, 0
+    45 00000047 6689D8                      mov ax, bx ;eax = a
+    46                                      
+    47 0000004A 8B1D[07000000]              mov ebx, dword [x]
+    48 00000050 8B0D[0B000000]              mov ecx, dword [x+4]
+    49                                      
+    50 00000056 01C3                        add ebx, eax
+    51 00000058 83D100                      adc ecx, 0 ;
+    52                                      
+    53 0000005B 6A00                        push dword 0
+    54 0000005D FF15[00000000]              call [exit]

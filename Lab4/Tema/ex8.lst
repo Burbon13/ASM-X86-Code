@@ -1,0 +1,75 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit
+     6                                  import exit msvcrt.dll
+     7                                  
+     8                                  segment data use32 class=data
+     9 00000000 FFFF                        a dw -1 ;word
+    10 00000002 0400                        b dw 4 ;word
+    11 00000004 14                          c db 20 ;byte
+    12 00000005 03                          d db 3 ;byte
+    13 00000006 05000000                    e dd 5 ;double word
+    14 0000000A 0300000000000000            x dq 3 ;quad word
+    15                                      
+    16                                  segment code use32 class=code
+    17                                  start:
+    18                                      ;1/a+200*b-c/(d+1)+x/a-e
+    19                                      ;cu semn
+    20                                      
+    21 00000000 66B80100                    mov ax, 1
+    22 00000004 6699                        cwd
+    23                                          
+    24 00000006 66F73D[00000000]            idiv word [a] ;ax = 1/a
+    25                                      
+    26 0000000D 6689C3                      mov bx, ax ;bx=1/a
+    27                                      
+    28 00000010 66B8C800                    mov ax, 200
+    29 00000014 66F72D[02000000]            imul word [b] ;dx:ax = 200*b
+    30                                      
+    31 0000001B 6653                        push bx
+    32                                      
+    33 0000001D 6689C3                      mov bx,ax
+    34 00000020 6689D1                      mov cx,dx
+    35                                      
+    36 00000023 6658                        pop ax
+    37                                      
+    38 00000025 6699                        cwd ;dx:ax = 1/a
+    39                                      
+    40 00000027 6601D8                      add ax, bx
+    41 0000002A 6611CA                      adc dx, cx       ;dx:ax = 1/a+b*200
+    42                                      
+    43 0000002D 6652                        push dx
+    44 0000002F 6650                        push ax
+    45 00000031 5B                          pop ebx        ;ebx=1/a+b*200
+    46                                      
+    47 00000032 A0[04000000]                mov al, [c]
+    48 00000037 6698                        cbw         ;ax = c
+    49                                      
+    50 00000039 8A15[05000000]              mov dl, [d]
+    51 0000003F 80C201                      add dl, 1   ;dl = d + 1
+    52                                      
+    53 00000042 F6FA                        idiv dl   ;al = c/(d+1)
+    54                                      
+    55 00000044 6698                        cbw
+    56 00000046 98                          cwde    ;eax = c/(d+1)
+    57                                      
+    58 00000047 29C3                        sub ebx, eax ;ebx = 1/a+b*200 - c/(d+1)
+    59                                      
+    60 00000049 2B1D[06000000]              sub ebx, dword [e]  ;ebx = 1/a+b*200 - c/(d+1) - e
+    61                                      
+    62 0000004F A0[00000000]                mov al, [a] 
+    63 00000054 6698                        cbw
+    64 00000056 98                          cwde  ;eax = a
+    65 00000057 89C1                        mov ecx, eax
+    66                                      
+    67 00000059 A1[0A000000]                mov eax, dword [x]
+    68 0000005E 8B15[0E000000]              mov edx, dword [x+4] ;edx:eax = x
+    69                                      
+    70 00000064 F7F9                        idiv ecx ;eax = x/a
+    71                                      
+    72 00000066 01C3                        add ebx, eax ;ebx = 1/a+b*200 - c/(d+1) + x/a - e
+    73                                      
+    74 00000068 6A00                        push dword 0
+    75 0000006A FF15[00000000]              call [exit]

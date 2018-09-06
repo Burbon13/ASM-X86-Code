@@ -1,0 +1,43 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit
+     6                                  import exit msvcrt.dll
+     7                                  
+     8                                  segment data use32 class=data
+     9 00000000 75                          a db 01110101b
+    10 00000001 B2                          b db 10110010b
+    11 00000002 AA                          c db 10101010b
+    12 00000003 E4                          d db 11100100b
+    13                                      
+    14                                  segment code use32 class=code
+    15                                  start:
+    16 00000000 66B80000                    mov ax, 0
+    17                                      
+    18 00000004 8A1D[00000000]              mov bl, [a] ;bl = a7 a6 a5 a4 a3 a2 a1 a0
+    19 0000000A C0EB04                      shr bl, 4   ;bl = 0  0  0  0  a7 a6 a5 a4
+    20 0000000D 80E307                      and bl, 00000111b ;bl = 0 0 0 0 0 a6 a5 a4
+    21 00000010 00D8                        add al, bl
+    22 00000012 80D400                      adc ah, 0
+    23                                      
+    24 00000015 8A1D[01000000]              mov bl, [b] 
+    25 0000001B C0EB04                      shr bl, 4   
+    26 0000001E 80E307                      and bl, 00000111b 
+    27 00000021 00D8                        add al, bl
+    28 00000023 80D400                      adc ah, 0
+    29                                      
+    30 00000026 8A1D[02000000]              mov bl, [c] 
+    31 0000002C C0EB04                      shr bl, 4   
+    32 0000002F 80E307                      and bl, 00000111b
+    33 00000032 00D8                        add al, bl
+    34 00000034 80D400                      adc ah, 0
+    35                                      
+    36 00000037 8A1D[03000000]              mov bl, [d] 
+    37 0000003D C0EB04                      shr bl, 4   
+    38 00000040 80E307                      and bl, 00000111b
+    39 00000043 00D8                        add al, bl
+    40 00000045 80D400                      adc ah, 0
+    41                                      
+    42 00000048 6A00                        push dword 0
+    43 0000004A FF15[00000000]              call [exit]

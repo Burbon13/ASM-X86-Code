@@ -1,0 +1,70 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit, printf
+     6                                  import exit msvcrt.dll
+     7                                  import printf msvcrt.dll
+     8                                  
+     9                                  segment data use32 class=data
+    10 00000000 0102030405060708            S db 1, 2, 3, 4, 5, 6, 7, 8
+    11                                      lenS equ $ - S
+    12 00000008 <res 00000008>              D resb lenS
+    13 00000010 25642000                    format db "%d ", 0
+    14                                      
+    15                                  segment code use32 class=code
+    16                                      start:
+    17 00000000 BE00000000                      mov esi, 0
+    18 00000005 BF00000000                      mov edi, 0
+    19                                          
+    20                                      loop1:
+    21 0000000A 83FE08                          cmp esi, lenS
+    22 0000000D 7312                            jae continue1
+    23                                          
+    24 0000000F 8A86[00000000]                  mov al, [S + esi]
+    25 00000015 8887[08000000]                  mov [D + edi], al
+    26                                          
+    27 0000001B 47                              inc edi
+    28 0000001C 83C602                          add esi, 2
+    29                                          
+    30 0000001F E2E9                            loop loop1
+    31                                          
+    32                                      continue1:
+    33 00000021 BE01000000                      mov esi, 1
+    34                                          
+    35                                      loop2:
+    36 00000026 83FE08                          cmp esi, lenS
+    37 00000029 7312                            jae dada
+    38                                          
+    39 0000002B 8A86[00000000]                  mov al, [S + esi]
+    40 00000031 8887[08000000]                  mov [D + edi], al
+    41                                          
+    42 00000037 47                              inc edi
+    43 00000038 83C602                          add esi, 2
+    44                                          
+    45 0000003B E2E9                            loop loop2
+    46                                      
+    47                                      dada:
+    48 0000003D BE00000000                      mov esi, 0
+    49                                          
+    50                                      afish:
+    51 00000042 83FE08                          cmp esi, lenS
+    52 00000045 741D                            je final
+    53                                          
+    54 00000047 60                              pushad
+    55                                          
+    56 00000048 8A86[08000000]                  mov al, [D + esi]
+    57 0000004E 6698                            cbw
+    58 00000050 98                              cwde
+    59 00000051 50                              push eax
+    60 00000052 68[10000000]                    push dword format
+    61 00000057 FF15[00000000]                  call [printf]
+    62 0000005D 83C408                          add esp, 4 * 2
+    63                                          
+    64 00000060 61                              popad
+    65 00000061 46                              inc esi
+    66 00000062 E2DE                            loop afish
+    67                                          
+    68                                      final:
+    69 00000064 6A00                            push dword 0
+    70 00000066 FF15[00000000]                  call [exit]

@@ -1,0 +1,33 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit
+     6                                  import exit msvcrt.dll
+     7                                  
+     8                                  segment data use32 class=data
+     9 00000000 56D7                        a dw 1101011101010110b 
+    10 00000002 94AE                        b dw 1010111010010100b
+    11 00000004 00000000                    c dd 0
+    12                                      
+    13                                  segment code use32 class=code
+    14                                  start:
+    15 00000000 668B15[04000000]            mov dx, [c] ;dx = a15 14 ... a1 a0
+    16                                      
+    17 00000007 8A25[03000000]              mov ah, byte [b+1] ;ah = b15 b14 b13 b12 b11 b10 b9 b8
+    18 0000000D C0E404                      shl ah, 4          ;ah = b11 b10 b9  b8  0   0   0  0
+    19 00000010 80CC0F                      or ah, 00001111b   ;ah = b11 b10 b9  b8  1   1   1  1
+    20                                      
+    21 00000013 A0[01000000]                mov al, byte [a+1] ;al = a15 a14 a13 a12 a11 a10 a9  a8
+    22 00000018 C0E803                      shr al, 3          ;al = 0   0   0   a15 a14 a13 a12 a11
+    23 0000001B 0CE0                        or al, 11100000b   ;al = 1   1   1  a15 a14 a13 a12 a11
+    24                                      
+    25                                      ;-->dx:ax = c
+    26                                      
+    27 0000001D 6652                        push dx
+    28 0000001F 6650                        push ax
+    29 00000021 58                          pop eax
+    30 00000022 A3[04000000]                mov [c], eax ;c = rezultatul
+    31                                      
+    32 00000027 6A00                        push dword 0
+    33 00000029 FF15[00000000]              call [exit]

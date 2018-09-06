@@ -1,0 +1,64 @@
+     1                                  ;se da un sir de dworzi definit in data segment
+     2                                  ;sa se determine rangurile octetilor de valoare minima din fiecare double word si sa se determine suma acesot octeti
+     3                                  ;sirul rangurilor si suma se vor afisa in fisierul 'iesire.txt' pe linii separate
+     4                                  ;ex: 1234a678h
+     5                                  bits 32
+     6                                  
+     7                                  global start
+     8                                  
+     9                                  extern exit, fopen, fprintf, fclose;, rang
+    10                                  import exit msvcrt.dll
+    11                                  import fopen msvcrt.dll
+    12                                  import fprintf msvcrt.dll
+    13                                  import fclose msvcrt.dll
+    14                                  
+    15                                  
+    16                                  segment data use32 public data
+    17 00000000 78A63412785624137D-         sir dd 1234a678h, 13245678h, 1ac3b47dh, 0fedc9876h, 98h, 7898h, 780098h
+    17 00000009 B4C31A7698DCFE9800-
+    17 00000012 000098780000980078-
+    17 0000001B 00                 
+    18                                      lensir equ $ - sir
+    19 0000001C 6965736972652E7478-         fisier db "iesire.txt", 0
+    19 00000025 7400               
+    20 00000027 7700                        mod_acces db "w", 0
+    21 00000029 FFFFFFFF                    handle dd -1
+    22 0000002D 00000000                    it dd 0
+    23                                      
+    24                                  
+    25                                  segment code use32 public code
+    26                                      start:
+    27                                          ;deschidere fisier
+    28 00000000 68[27000000]                    push dword mod_acces
+    29 00000005 68[1C000000]                    push dword fisier
+    30 0000000A FF15[00000000]                  call [fopen]
+    31 00000010 83C408                          add esp, 4 * 2
+    32                                          
+    33 00000013 83F800                          cmp eax, 0
+    34 00000016 7426                            je final
+    35 00000018 A3[29000000]                    mov dword [handle], eax
+    36                                          ;deschis cu succes fisierul
+    37                                          
+    38 0000001D B900000000                      mov ecx, 0
+    39 00000022 BE[00000000]                    mov esi, sir
+    40                                          
+    41                                          bucla:
+    42 00000027 AD                                  lodsd 
+    43 00000028 890D[2D000000]                      mov dword [it], ecx
+    44                                              
+    45                                              ;reg free
+    46                                              ;rang(numar) -> al - octetul cautat; ah - rangul
+    47                                              ;push dword [sir
+    48                                              
+    49 0000002E 8B0D[2D000000]                      mov ecx, dword [it]
+    50 00000034 83C104                              add ecx, 4
+    51 00000037 83F91C                              cmp ecx, lensir
+    52 0000003A 7402                                je suma
+    53 0000003C EBE9                                jmp bucla
+    54                                      
+    55                                      suma:
+    56                                      
+    57                                      final:
+    58 0000003E 6A00                            push dword 0
+    59 00000040 FF15[00000000]                  call [exit]
+    60                                      

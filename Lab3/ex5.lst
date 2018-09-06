@@ -1,0 +1,41 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit
+     6                                  import exit msvcrt.dll
+     7                                  
+     8                                  segment data use32 class=data
+     9 00000000 0A00                        a dw 10; 2 word
+    10 00000002 08                          b db 8; 1 byte
+    11 00000003 0400                        c dw 4; 2 word
+    12 00000005 02000000                    d dd 2; 4 dword
+    13 00000009 0500000000000000            x dq 5; 8 qword
+    14                                      
+    15                                  segment class use32 class=code
+    16                                  start:
+    17                                      ;(a*a+b/c-1)/(b+c)+d-x
+    18                                      
+    19 00000000 66A1[00000000]              mov ax, [a]
+    20 00000006 66F725[00000000]            mul word [a] ;dx:ax = a * a
+    21                                      
+    22 0000000D 6689D1                      mov cx, dx
+    23 00000010 6689C3                      mov bx, ax ;cx:bx = a * a
+    24                                      
+    25 00000013 66BA0000                    mov dx, 0
+    26 00000017 B400                        mov ah, 0
+    27 00000019 A0[02000000]                mov al, [b] ;dx:ax = b 
+    28 0000001E 66F735[03000000]            div word [c] ;ax = b / c
+    29                                      
+    30 00000025 6601C3                      add bx, ax
+    31 00000028 6683D100                    adc cx, 0 ;cx:bx = a * a + b / c
+    32                                      
+    33 0000002C 6689CA                      mov dx, cx
+    34 0000002F 6689D8                      mov ax, bx ;dx:ax = a * a + b / c
+    35                                      
+    36 00000032 8A1D[02000000]              mov bl, [b]
+    37 00000038 B700                        mov bh, 0 ;bx = b
+    38 0000003A 66031D[03000000]            add bx, word [c] ;bx = b + c
+    39                                      
+    40 00000041 6A00                        push dword 0
+    41 00000043 FF15[00000000]              call [exit]

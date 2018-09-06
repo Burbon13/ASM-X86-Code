@@ -1,0 +1,41 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit
+     6                                  import exit msvcrt.dll
+     7                                  
+     8                                  segment data use32 class=data
+     9 00000000 785634124D3C2B1A76-         s DD 12345678h, 1A2B3C4Dh, 0FE98DC76h
+     9 00000009 DC98FE             
+    10                                      ls equ ($ - s)/4
+    11 0000000C <res 00000003>              rez resb ls
+    12                                      
+    13                                  segment code use32 class=code
+    14                                      start:
+    15 00000000 BE[00000000]                    mov esi, s
+    16 00000005 BF[0C000000]                    mov edi, rez
+    17 0000000A B903000000                      mov ecx, ls
+    18                                          
+    19                                          repeta:
+    20 0000000F AD                                  lodsd ;eax = ce vrem ; in al e ce vrem sa verificam
+    21 00000010 88E0                                mov al, ah
+    22 00000012 B400                                mov ah, 0
+    23 00000014 B30A                                mov bl, 10
+    24 00000016 F6F3                                div bl 
+    25 00000018 80FC00                              cmp ah, 0
+    26 0000001B 7402                                je adauga
+    27 0000001D EB09                                jmp next
+    28                                              
+    29                                              adauga:
+    30 0000001F 83EE04                                  sub esi, 4
+    31 00000022 AD                                      lodsd
+    32 00000023 88E0                                    mov al, ah
+    33 00000025 AA                                      stosb
+    34 00000026 EB00                                    jmp next
+    35                                              
+    36                                              next:
+    37 00000028 E2E5                            loop repeta
+    38                                          
+    39 0000002A 6A00                            push dword 0
+    40 0000002C FF15[00000000]                  call [exit]

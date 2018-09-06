@@ -1,0 +1,36 @@
+     1                                  bits 32
+     2                                  
+     3                                  global start
+     4                                  
+     5                                  extern exit,printf,scanf
+     6                                  import exit msvcrt.dll
+     7                                  import printf msvcrt.dll
+     8                                  import scanf msvcrt.dll
+     9                                  
+    10                                  segment data use32 class=data
+    11 00000000 00000000                    a dd 0
+    12 00000004 61203D2000                  m1 db "a = ", 0
+    13 00000009 257800                      min db "%x", 0
+    14 0000000C 257828313629203D20-         mout db "%x(16) = %d(10)", 0
+    14 00000015 25642831302900     
+    15                                      
+    16                                  segment code use32 class=code
+    17                                  start:
+    18 00000000 68[04000000]                push dword m1
+    19 00000005 FF15[00000000]              call [printf]
+    20 0000000B 83C404                      add esp, 4 * 1
+    21                                      
+    22 0000000E 68[00000000]                push dword a
+    23 00000013 68[09000000]                push dword min
+    24 00000018 FF15[00000000]              call [scanf]
+    25 0000001E 83C408                      add esp, 4 * 2
+    26                                      
+    27 00000021 FF35[00000000]              push dword [a]
+    28 00000027 FF35[00000000]              push dword [a]
+    29 0000002D 68[0C000000]                push dword mout
+    30 00000032 FF15[00000000]              call [printf]
+    31 00000038 83C40C                      add esp, 4 * 3
+    32                                      
+    33                                      
+    34 0000003B 6A00                        push dword 0
+    35 0000003D FF15[00000000]              call [exit]

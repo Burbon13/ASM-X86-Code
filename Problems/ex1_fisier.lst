@@ -1,0 +1,38 @@
+     1                                  ;Se da un fisier text. Sa se citeasca continutul fisierului, sa se contorizeze numarul de vocale si sa se afiseze aceasta valoare. 
+     2                                  ;Numele fisierului text este definit in segmentul de date.
+     3                                  bits 32
+     4                                  
+     5                                  global start
+     6                                  
+     7                                  extern exit, fread, printf, fopen, fclose
+     8                                  import exit msvcrt.dll
+     9                                  import fread msvcrt.dll
+    10                                  import printf msvcrt.dll
+    11                                  import fopen msvcrt.dll
+    12                                  import fclose msvcrt.dll
+    13                                  
+    14                                  
+    15                                  segment data use32 public code
+    16 00000000 696E7075742E747874          fisier db "input.txt"
+    17 00000009 7200                        acces db "r", 0
+    18 0000000B FFFFFFFF                    hndl dd -1
+    19 0000000F 256400                      format_out db "%d", 0
+    20 00000012 <res 00000069>              sir resb 105
+    21 0000007B 00000000                    vocale dd 0
+    22                                      
+    23                                      
+    24                                  segment code use32 public code
+    25                                      start:
+    26                                          ;deschidere fisier
+    27 00000000 68[09000000]                    push dword acces
+    28 00000005 68[00000000]                    push dword fisier
+    29 0000000A FF15[00000000]                  call [fopen]
+    30 00000010 83C408                          add esp, 4 * 2
+    31                                          
+    32 00000013 83F800                          cmp eax, 0
+    33                                          
+    34                                          
+    35                                          
+    36                                      
+    37 00000016 6A00                            push dword 0
+    38 00000018 FF15[00000000]                  call [exit]

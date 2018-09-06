@@ -1,0 +1,129 @@
+     1                                  bits 32 ; assembling for the 32 bits architecture
+     2                                  
+     3                                  ; declare the EntryPoint (a label defining the very first instruction of the program)
+     4                                  global start        
+     5                                  
+     6                                  ; declare external functions needed by our program
+     7                                  extern exit, fopen, fclose, fread, printf              ; tell nasm that exit exists even if we won't be defining it
+     8                                  import exit msvcrt.dll 
+     9                                  import fopen msvcrt.dll 
+    10                                  import fread msvcrt.dll 
+    11                                  import fclose msvcrt.dll 
+    12                                  import printf msvcrt.dll    ; exit is a function that ends the calling process. It is defined in msvcrt.dll
+    13                                                            ; msvcrt.dll contains exit, printf and all the other important C-runtime specific functions
+    14                                  
+    15                                  ; our data is declared here (the variables needed by our program)
+    16                                  segment data use32 class=data
+    17 00000000 70616C696E64726F6D-     nume_fisier db "palindrom2.txt", 0   ; numele fisierului care va fi deschis
+    17 00000009 322E74787400       
+    18 0000000F 7200                    mod_acces db "r", 0             ; modul de deschidere a fisierului; r - pentru scriere. fisierul trebuie sa existe 
+    19 00000011 FFFFFFFF                descriptor_fis dd -1            ; variabila in care vom salva descriptorul fisierului - necesar pentru a putea face referire la fisier
+    20 00000015 00000000                nr_cifre dd 0              ; variabila in care vom salva numarul de caractere citit din fisier in etapa curenta
+    21                                  len equ 50   
+    22 00000019 256300                  format db '%c' ,0 
+    23 0000001C 00000000                aux dd 0
+    24 00000020 <res 00000032>          buffer resb len
+    25 00000052 <res 00000032>          new resb len
+    26                                     ; ...
+    27                                  
+    28                                  ; our code starts here
+    29                                  segment code use32 class=code
+    30                                      start:
+    31                                      ; apelam fopen pentru a deschide fisierul
+    32                                          ; functia va returna in EAX descriptorul fisierului sau 0 in caz de eroare
+    33                                          ; eax = fopen(nume_fisier, mod_acces)
+    34 00000000 68[0F000000]                    push dword mod_acces
+    35 00000005 68[00000000]                    push dword nume_fisier
+    36 0000000A FF15[00000000]                  call [fopen]
+    37 00000010 83C408                          add esp, 4*2
+    38                                          
+    39                                          ; verificam daca functia fopen a creat cu succes fisierul (daca EAX != 0)
+    40 00000013 83F800                          cmp eax, 0                  
+    41 00000016 0F84BA000000                    je final
+    42                                          
+    43 0000001C A3[11000000]                    mov [descriptor_fis], eax   ; salvam valoarea returnata de fopen in variabila descriptor_fis
+    44                                          
+    45                                          ; echivalentul in pseudocod al urmatoarei secvente de cod este:
+    46                                          ;repeta
+    47                                          ;   nr_car_citite = fread(buffer, 1, len, descriptor_fis)
+    48                                          ;   daca nr_car_citite > 0
+    49                                          ;       ; instructiuni pentru procesarea caracterelor citite in aceasta etapa
+    50                                          ;pana cand nr_car_citite == 0
+    51                                         
+    52                                              ; citim o parte (100 caractere) din textul in fisierul deschis folosind functia fread
+    53                                              ; eax = fread(buffer, 1, len, descriptor_fis)
+    54 00000021 FF35[11000000]                      push dword [descriptor_fis]
+    55 00000027 6A32                                push dword len
+    56 00000029 6A01                                push dword 1
+    57 0000002B 68[20000000]                        push dword buffer
+    58 00000030 FF15[00000000]                      call [fread]
+    59 00000036 83C410                              add esp, 4*4
+    60                                              
+    61                                          ;am inchiat citirea, avem tot sirul in buffer
+    62                                          cleanup:
+    63 00000039 BE00000000                      mov esi,0
+    64 0000003E BF00000000                      mov edi,0
+    65                                          for_sir:;parcurgem caracter cu caracter pana dam de virgula
+    66 00000043 83FE32                              cmp esi, len
+    67 00000046 0F848A000000                        je final
+    68 0000004C 8A86[20000000]                      mov al, byte [buffer+esi]
+    69 00000052 3C2C                                cmp al, ','
+    70 00000054 740A                                je verificare;daca am dat, verificam daca sirul new in care avem numarul este simetric
+    71 00000056 8887[52000000]                      mov byte [new+edi],al
+    72 0000005C 46                                  inc esi
+    73 0000005D 47                                  inc edi
+    74 0000005E EBE3                                jmp for_sir
+    75                                              verificare:
+    76 00000060 B900000000                          mov ecx,0
+    77 00000065 89F8                                mov eax,edi
+    78 00000067 66BB0200                            mov bx,2
+    79 0000006B 66F7F3                              div bx;ax=edi//2
+    80 0000006E 98                                  cwde
+    81 0000006F A3[1C000000]                        mov dword [aux],eax
+    82                                              repeta:
+    83 00000074 3B0D[1C000000]                      cmp ecx, [aux]
+    84 0000007A 7731                                ja afisare_palindrom
+    85 0000007C 8A81[52000000]                      mov al, [new+ecx]
+    86 00000082 89FB                                mov ebx,edi
+    87 00000084 29CB                                sub ebx,ecx
+    88 00000086 4B                                  dec ebx
+    89 00000087 3A83[52000000]                      cmp al, byte [new+ebx]
+    90 0000008D 7503                                jne fals;daca nu este
+    91 0000008F 41                                  inc ecx
+    92 00000090 EBE2                                jmp repeta
+    93                                              fals:;setam din nou new a.i. sa fie gol si edi =0
+    94 00000092 B900000000                          mov ecx,0
+    95                                              for_stergere:
+    96 00000097 39F9                                cmp ecx,edi
+    97 00000099 770A                                ja fin
+    98 0000009B C681[52000000]00                    mov byte [new+ecx],0
+    99 000000A2 41                                  inc ecx
+   100 000000A3 EBF2                                jmp for_stergere
+   101                                              fin:
+   102 000000A5 BF00000000                          mov edi,0
+   103 000000AA 46                                  inc esi
+   104 000000AB EB96                                jmp for_sir
+   105                                              afisare_palindrom:;daca am gasit,il afisam
+   106 000000AD BB00000000                          mov ebx,0
+   107 000000B2 47                                  inc edi
+   108                                              repeta_af:
+   109 000000B3 39FB                                cmp ebx,edi
+   110 000000B5 741D                                je ffinal
+   111 000000B7 8A83[52000000]                      mov al,[new+ebx]
+   112 000000BD 6698                                cbw
+   113 000000BF 98                                  cwde
+   114 000000C0 50                                  push eax
+   115 000000C1 68[19000000]                        push dword format
+   116 000000C6 FF15[00000000]                      call [printf]
+   117 000000CC 83C408                              add esp, 4*2
+   118 000000CF 83C301                              add ebx,1
+   119 000000D2 EBDF                                jmp repeta_af
+   120                                              ffinal:;si revenim pana terminam
+   121 000000D4 EBBC                                jmp fals
+   122                                              
+   123                                          
+   124                                          
+   125                                        final:  
+   126                                          ; exit(0)
+   127 000000D6 6A00                            push    dword 0      
+   128 000000D8 FF15[00000000]                  call    [exit] 

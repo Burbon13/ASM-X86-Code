@@ -1,0 +1,18 @@
+     1                                  ;Ex 8 lab 7
+     2                                  bits 32
+     3                                  
+     4                                  global start
+     5                                  
+     6                                  extern exit
+     7                                  import exit msvcrt.dll
+     8                                  
+     9                                  segment data use32 class=data
+    10 00000000 0204020502020404            sir DB 2, 4, 2, 5, 2, 2, 4, 4 
+    11                                      lsir equ $ - sir
+    12 00000008 <res 00000008>              rez resb lsir
+    13                                      
+    14                                  segment code us32 class=code
+    15                                      start:
+    16                                          
+    17 00000000 6A00                            push dword 0
+    18 00000002 FF15[00000000]                  call [exit]
